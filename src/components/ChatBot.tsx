@@ -1,5 +1,3 @@
-'use client';
-
 import React, { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -83,7 +81,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({ onSendMessage, isLoading = fal
   };
 
   return (
-    <div className="flex flex-col h-full max-w-4xl mx-auto bg-white rounded-lg shadow-lg">
+    <div className="flex flex-col h-full max-w-5xl mx-auto bg-white rounded-lg shadow-lg">
       {/* ヘッダー */}
       <div className="bg-blue-600 text-white p-4 rounded-t-lg">
         <h1 className="text-xl font-bold">契約わかる君</h1>
@@ -98,7 +96,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({ onSendMessage, isLoading = fal
             className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             <div
-              className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+              className={`max-w-xs lg:max-w-2xl xl:max-w-4xl px-4 py-2 rounded-lg ${
                 message.role === 'user'
                   ? 'bg-blue-500 text-white'
                   : 'bg-gray-100 text-gray-800'
@@ -108,17 +106,21 @@ export const ChatBot: React.FC<ChatBotProps> = ({ onSendMessage, isLoading = fal
                 <ReactMarkdown 
                   remarkPlugins={[remarkGfm]}
                   components={{
-                    // テーブルのスタイリング
+                    // テーブルのスタイリング - レスポンシブ対応
                     table: ({node, ...props}) => (
-                      <div className="overflow-x-auto">
-                        <table className="min-w-full border-collapse border border-gray-300" {...props} />
+                      <div className="overflow-x-auto mb-4">
+                        <div className="min-w-full inline-block align-middle">
+                          <div className="overflow-hidden border border-gray-200 rounded-lg">
+                            <table className="min-w-full divide-y divide-gray-200" {...props} />
+                          </div>
+                        </div>
                       </div>
                     ),
                     th: ({node, ...props}) => (
-                      <th className="border border-gray-300 bg-gray-100 px-3 py-2 text-left font-semibold" {...props} />
+                      <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200" {...props} />
                     ),
                     td: ({node, ...props}) => (
-                      <td className="border border-gray-300 px-3 py-2" {...props} />
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-b border-gray-200" {...props} />
                     ),
                     // 見出しのスタイリング
                     h1: ({node, ...props}) => (
@@ -156,6 +158,19 @@ export const ChatBot: React.FC<ChatBotProps> = ({ onSendMessage, isLoading = fal
                     // ブロッククォートのスタイリング
                     blockquote: ({node, ...props}) => (
                       <blockquote className="border-l-4 border-blue-500 pl-4 py-2 bg-blue-50 italic" {...props} />
+                    ),
+                    // カード形式のレイアウト - 縦長画面に最適化
+                    div: ({node, className, ...props}) => {
+                      if (className && className.includes('card')) {
+                        return (
+                          <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-4 mb-4 hover:shadow-md transition-shadow" {...props} />
+                        );
+                      }
+                      return <div {...props} />;
+                    },
+                    // リストアイテムの改善
+                    li: ({node, ...props}) => (
+                      <li className="mb-2 leading-relaxed" {...props} />
                     ),
                   }}
                 >

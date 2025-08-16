@@ -22,6 +22,7 @@ export interface ContractRule {
   category: string;
   tags: string[];
   riskLevel: 'low' | 'medium' | 'high';
+  matchScore?: number;
 }
 
 export interface ContractQuestion {
