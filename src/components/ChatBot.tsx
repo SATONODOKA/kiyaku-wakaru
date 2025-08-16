@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { ChatMessage } from '../types';
 
 interface ChatBotProps {
@@ -102,7 +104,64 @@ export const ChatBot: React.FC<ChatBotProps> = ({ onSendMessage, isLoading = fal
                   : 'bg-gray-100 text-gray-800'
               }`}
             >
-              <p className="text-sm">{message.content}</p>
+              <div className="text-sm prose prose-sm max-w-none">
+                <ReactMarkdown 
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    // テーブルのスタイリング
+                    table: ({node, ...props}) => (
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full border-collapse border border-gray-300" {...props} />
+                      </div>
+                    ),
+                    th: ({node, ...props}) => (
+                      <th className="border border-gray-300 bg-gray-100 px-3 py-2 text-left font-semibold" {...props} />
+                    ),
+                    td: ({node, ...props}) => (
+                      <td className="border border-gray-300 px-3 py-2" {...props} />
+                    ),
+                    // 見出しのスタイリング
+                    h1: ({node, ...props}) => (
+                      <h1 className="text-xl font-bold text-gray-900 mb-3" {...props} />
+                    ),
+                    h2: ({node, ...props}) => (
+                      <h2 className="text-lg font-bold text-gray-800 mb-2" {...props} />
+                    ),
+                    h3: ({node, ...props}) => (
+                      <h3 className="text-base font-bold text-gray-700 mb-2" {...props} />
+                    ),
+                    // リストのスタイリング
+                    ul: ({node, ...props}) => (
+                      <ul className="list-disc list-inside mb-2 space-y-1" {...props} />
+                    ),
+                    ol: ({node, ...props}) => (
+                      <ol className="list-decimal list-inside mb-2 space-y-1" {...props} />
+                    ),
+                    // 強調のスタイリング
+                    strong: ({node, ...props}) => (
+                      <strong className="font-bold text-gray-900" {...props} />
+                    ),
+                    em: ({node, ...props}) => (
+                      <em className="italic text-gray-700" {...props} />
+                    ),
+                    // コードブロックのスタイリング
+                    code: ({node, inline, ...props}: any) => 
+                      inline ? (
+                        <code className="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono" {...props} />
+                      ) : (
+                        <pre className="bg-gray-100 p-3 rounded overflow-x-auto">
+                          <code className="text-sm font-mono" {...props} />
+                        </pre>
+                      ),
+                    // ブロッククォートのスタイリング
+                    blockquote: ({node, ...props}) => (
+                      <blockquote className="border-l-4 border-blue-500 pl-4 py-2 bg-blue-50 italic" {...props} />
+                    ),
+                  }}
+                >
+                  {message.content}
+                </ReactMarkdown>
+              </div>
               <p className="text-xs opacity-70 mt-1">
                 {message.timestamp.toLocaleTimeString('ja-JP', { 
                   hour: '2-digit', 
