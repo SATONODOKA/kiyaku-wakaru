@@ -1,233 +1,345 @@
-import contractRules from '../../data/contract-rules.json';
-import { ContractRule } from '../types';
+export interface SearchResult {
+  content: string;
+  relevance: number;
+  chapter: string;
+}
 
 export class ContractRuleService {
-  private rules: any;
+  private contractText: string = '';
+  private textChunks: string[] = [];
 
   constructor() {
-    this.rules = contractRules;
+    this.loadContractText();
+  }
+
+  /**
+   * 契約書のテキストを読み込み、適切なサイズに分割
+   */
+  private loadContractText() {
+    // 完全版の研修業務委託契約ルール集テキスト
+    this.contractText = `研修業務委託契約ルール集（詳細完全版）
+
+第1章　総則
+第1条（目的）
+　本契約ルール（以下「本ルール」という）は、株式会社●●（以下「甲」という）が、外部の講師、ファシリテーター、トレーナー、または教育コンサルタント等（以下「乙」という）に対して、法人向け人材育成サービスの一環として実施する各種研修業務（以下「研修業務」という）を委託するにあたり、業務の範囲、手続き、品質、成果物、報酬、契約管理、秘密保持、知的財産権その他の事項について、甲乙双方が共通認識を持ち、円滑かつ高品質な業務遂行を実現することを目的とする。
+
+第2条（適用対象）
+　本ルールは、甲が主催、受託、または共催する研修プログラムにおいて、乙が甲の指名または合意に基づいて、登壇、設計支援、教材作成、参加者フォロー等のいずれかの業務を行う場合に適用される。なお、業務形態がスポット型、定期型、プロジェクト型のいずれであっても、個別発注書または契約書により本ルールが適用される旨が明記された場合は、当該契約の付属文書として拘束力を持つものとする。
+
+第3条（用語の定義）
+「研修」とは、特定の組織に所属する個人を対象に、知識・スキル・マインドの向上、組織行動の変容、業務成果への波及等を目的として実施される、集合または非集合形式の教育プログラムをいう。
+「対面研修」とは、物理的な会場に対象者を集めて実施する形式をいう。
+「オンライン研修」とは、Zoom、Teams等のWeb会議ツールを用いて、インターネット経由で実施される形式をいう。
+「ハイブリッド研修」とは、対面参加者とオンライン参加者が混在する形式の研修をいう。
+「委託業務」とは、甲が乙に依頼し、乙が実施するすべての業務活動をいい、具体的には研修登壇、打ち合わせ出席、資料作成、報告対応等が含まれる。
+
+第4条（業務範囲の原則）
+　本ルールは、原則として研修業務の「設計」「実施」「事後対応」の3フェーズにまたがる業務を想定しており、乙が担当する具体的な業務は案件ごとの発注書に明示される。ただし、業務が明示されていない場合であっても、合理的に必要と判断される範囲の対応（例：参加者の事前情報確認、緊急時の連絡対応等）については、甲乙間で都度協議のうえ、対応を依頼することがある。
+
+第5条（契約形態）
+　乙との業務委託契約は、原則として個別案件ごとに発注書をもって成立する。甲乙の間に基本契約が存在する場合でも、実際の業務遂行は各発注書の内容に準拠するものとし、基本契約に優先する効力を持つ。発注書が存在しない場合でも、甲が文書または電子メールにより業務依頼の内容、報酬、納期等を提示し、乙がこれに合意の意を示した場合には、契約が成立したものとみなす。
+
+第2章　契約の目的
+第1条（業務委託契約の背景）
+　甲が展開する人材育成サービスは、単発的な講義型研修ではなく、組織課題や受講者の実務との接続を意識した設計・運用を基本としており、乙にはその設計思想を理解し、単なる講師やファシリテーターという立場を超えた協働者（パートナー）としての関与が期待される。研修成果は、参加者の一時的な満足度ではなく、職場内での行動変容と成果貢献によって最終的に評価されるものである。
+
+第2条（乙に期待される役割）
+　乙に求められる主な役割は、以下の通りである。
+（1）対象組織や受講者層の特性を踏まえた研修設計へのフィードバック
+（2）資料・教材の最適化（オリジナル作成または既存資料の調整）
+（3）登壇時の参加者対応（問いかけ、フィードバック、進行管理など）
+（4）事後のレポート提出や受講者情報の読み取り支援
+（5）甲のディレクターや営業担当と連携した改善提案・再設計支援
+　これらの役割は、案件によって強弱があり、甲乙間の発注内容に明記された範囲に基づいて遂行される。ただし、案件が進行する中で明示的に定義されていなかった付随業務が発生した場合には、甲と協議のうえ柔軟に対応することが求められる。
+
+第3条（クライアントとの三者関係）
+　乙が登壇する研修の多くは、甲が法人顧客（以下「クライアント」という）から受託して実施するものであり、乙はあくまで甲のパートナーであり、クライアントに対して直接の契約責任や価格交渉等を行う立場にはない。したがって、乙がクライアントと個別に連絡を取る場合は、必ず甲の承諾を得た上で行うこと。また、クライアント側から乙に直接別業務の依頼があった場合も、甲への事前報告と承認が必要である。
+
+第4条（業務結果の位置づけ）
+　乙の業務は、請負契約ではなく準委任契約として位置づけられる。すなわち、特定の成果物の完成ではなく、相当程度の注意義務をもって業務を遂行することが契約上の義務である。このため、研修の成果（例：満足度、行動変容、定着度等）については乙の責任範囲を超えるものであり、成果に関する最終的な評価は甲またはクライアントによって行われる。
+
+第3章　業務範囲と報酬構成
+第1条（業務区分）
+　乙に委託される業務は、案件ごとに異なるが、一般的には以下のいずれかまたは複数の業務で構成される。
+（1）打ち合わせ対応（初回／中間／最終）
+（2）資料作成・カスタマイズ業務
+（3）研修登壇（半日または1日）
+（4）報告書の提出およびアンケート読解支援
+（5）リハーサルまたは接続テスト対応
+（6）その他、甲が必要と判断する準備・連携業務
+　これらは案件ごとに発注書上に明記され、該当する項目のみが乙に委託される。発注外の業務は報酬対象外となるが、実務上発生した例外的対応については協議により追加報酬を設定することがある。
+
+第2条（報酬単価）
+　業務種別ごとの基本報酬額は以下のとおりである。すべて税抜金額とし、支払時に消費税相当額を加算する。
+（1）打ち合わせ対応
+　- 初回オリエンテーション（60分想定）：5,000円／回
+　- 中間レビュー（30〜60分）：3,000円／回
+　- 最終確認（15〜30分）：無償（基本報酬に含む）
+（2）資料作成
+　- オリジナル作成（30枚程度のスライド想定）：20,000円／件
+　- 既存資料カスタマイズ（構成変更・調整含む）：8,000円／件
+　- ワークシートや補助教材（1種）：5,000円／件（必要時）
+（3）研修登壇
+　- 半日登壇（3時間以内、30名以下）：35,000円／回
+　- 1日登壇（6時間以内、50名以下）：60,000円／回
+　- 延長対応（30分超過毎）：8,000円／1時間単位
+（4）報告業務
+　- 実施後レポート（A4換算2ページ程度）：5,000円／件
+　- アンケート読解支援（要分析対応）：3,000円／回
+（5）その他
+　- 接続テスト・リハーサル（30分以内）：3,000円／回
+　- 緊急対応・追加業務：協議により決定
+
+第3条（報酬の調整）
+　以下の場合、基本報酬額が調整されることがある。
+（1）参加者数が基本想定を超える場合
+　- 31〜50名：基本報酬の1.2倍
+　- 51名以上：基本報酬の1.5倍
+（2）研修時間が基本想定を超える場合
+　- 30分超過毎：基本報酬の0.1倍を加算
+（3）複数日連続実施の場合
+　- 2日目以降：基本報酬の0.9倍
+（4）遠方出張の場合
+　- 交通費・宿泊費：実費支給
+　- 出張手当：5,000円／日
+
+第4条（支払い条件）
+　報酬の支払いは、原則として業務完了後30日以内に行う。ただし、以下の場合は別途協議する。
+（1）長期プロジェクトの場合：月次または四半期ごとの分割支払い
+（2）高額案件の場合：前払いまたは分割支払い
+（3）緊急案件の場合：即座支払い
+
+第4章　品質管理と成果物
+第1条（品質基準）
+　乙は、以下の品質基準を満たすよう業務を遂行する。
+（1）研修設計
+　- 対象組織の課題と受講者のニーズを適切に把握
+　- 学習目標と成果指標を明確化
+　- 実務との接続性を意識した内容構成
+（2）研修実施
+　- 参加者の理解度に応じた柔軟な進行
+　- 双方向性を重視したファシリテーション
+　- 時間管理の徹底
+（3）事後対応
+　- 参加者の行動変容を促すフォローアップ
+　- 組織への波及効果の測定と報告
+　- 次回研修への改善提案
+
+第2条（成果物の定義）
+　乙が提出すべき成果物は以下の通りである。
+（1）研修実施前
+　- 研修設計書（学習目標、内容構成、時間配分）
+　- 参加者事前課題（必要に応じて）
+　- 研修資料（スライド、ワークシート等）
+（2）研修実施中
+　- 参加者名簿・出欠確認
+　- 研修中の写真・動画（許可を得た場合）
+（3）研修実施後
+　- 実施報告書（参加者数、内容、反応等）
+　- アンケート結果の分析・考察
+　- 次回研修への改善提案
+　- 参加者からの質問への回答（必要に応じて）
+
+第3条（成果物の品質チェック）
+　甲は、乙が提出した成果物について以下の観点で品質チェックを行う。
+（1）内容の正確性・適切性
+（2）形式の統一性・見やすさ
+（3）提出期限の遵守
+（4）改善提案の具体性・実現可能性
+　品質基準を満たしていない場合、修正・再提出を求めることがある。
+
+第5章　秘密保持
+第1条（秘密情報の定義）
+　本ルールにおいて「秘密情報」とは、甲またはクライアントから開示された、書面、電子媒体その他の方法により開示される情報であって、開示の際に秘密である旨が明示されたもの、または開示の性質上秘密であることが明らかなものをいう。
+
+第2条（秘密保持義務）
+　乙は、本契約の有効期間中および終了後5年間、秘密情報を秘密として保持し、甲の事前の書面による承諾なしに、第三者に開示、漏洩、譲渡または使用してはならない。
+
+第3条（秘密情報の取り扱い）
+　乙は、秘密情報の取り扱いについて以下の措置を講じる。
+（1）秘密情報へのアクセスを必要最小限の者に限定
+（2）秘密情報の複製・転送を禁止
+（3）秘密情報の保管場所を安全な場所に限定
+（4）秘密情報の廃棄時は適切な方法で完全に破棄
+
+第4条（違反時の措置）
+　乙が秘密保持義務に違反した場合、甲は以下の措置を講じることができる。
+（1）契約の即座解除
+（2）損害賠償の請求
+（3）法的措置の検討
+（4）今後の業務委託の停止
+
+第6章　知的財産権
+第1条（既存の知的財産権）
+　乙が本契約の履行に際して使用する既存の教材、資料、手法等の知的財産権は、乙に帰属する。ただし、甲が事前に承認した既存の知的財産権の使用に限る。
+
+第2条（新規作成物の知的財産権）
+　乙が本契約の履行に際して新たに作成した教材、資料等（以下「新規作成物」という）の知的財産権は、甲に帰属する。ただし、以下の場合は除く。
+（1）乙が独自に開発した手法・ノウハウ
+（2）乙の専門分野における一般的な知識・スキル
+（3）乙が他の案件で使用する汎用的な教材・資料
+
+第3条（新規作成物の利用）
+　甲は、新規作成物について以下の利用ができる。
+（1）当該研修の再実施
+（2）類似研修への応用・改変
+（3）他講師への提供・共有
+（4）営業資料・事例としての活用
+
+第4条（乙の利用制限）
+　乙は、新規作成物を以下の場合を除き、他の案件で使用してはならない。
+（1）甲の事前承諾を得た場合
+（2）乙の専門分野における一般的な知識・スキルとして活用する場合
+（3）乙の自己研鑽・能力向上のため使用する場合
+
+第7章　契約管理とトラブル対応
+第1条（契約の変更・追加）
+　契約内容の変更・追加が必要となった場合、以下の手続きを経る。
+（1）変更・追加の必要性の確認
+（2）甲乙間での協議・合意
+（3）発注書の修正・追加
+（4）報酬の調整（必要に応じて）
+
+第2条（契約の解除）
+　以下の場合、契約を解除することができる。
+（1）乙の重大な契約違反
+（2）乙の業務遂行能力の著しい低下
+（3）乙の健康状態による業務継続の困難
+（4）甲の事業方針変更による業務の不要
+（5）その他、契約継続が困難な事由の発生
+
+第3条（トラブル時の対応）
+　研修実施中にトラブルが発生した場合、以下の手順で対応する。
+（1）即座に甲への報告
+（2）状況の詳細な把握・記録
+（3）参加者への適切な説明・対応
+（4）トラブルの原因分析・再発防止策の検討
+（5）必要に応じてクライアントへの説明・対応
+
+第4条（損害賠償）
+　乙の故意または過失により甲またはクライアントに損害が生じた場合、乙はその損害を賠償する責任を負う。ただし、損害の範囲は、乙が予見し得た範囲内とする。
+
+第8章　その他
+第1条（準拠法・管轄裁判所）
+　本ルールに関する紛争については、日本法を準拠法とし、東京地方裁判所を第一審の管轄裁判所とする。
+
+第2条（協議事項）
+　本ルールに定めのない事項については、甲乙間で誠実に協議し、適切な解決を図るものとする。
+
+第3条（ルールの改定）
+　本ルールの改定は、甲乙間の協議により行う。改定されたルールは、改定日から適用される。
+
+第4条（附則）
+　本ルールは、2024年1月1日から施行する。`;
+
+    this.textChunks = this.splitTextIntoChunks(this.contractText);
+  }
+
+  /**
+   * テキストを適切なサイズのチャンクに分割
+   */
+  private splitTextIntoChunks(text: string): string[] {
+    const chunks: string[] = [];
+    const lines = text.split('\n');
+    let currentChunk = '';
+    
+    for (const line of lines) {
+      // 章の区切りを検出
+      if (line.match(/^第\d+章/)) {
+        if (currentChunk.trim()) {
+          chunks.push(currentChunk.trim());
+        }
+        currentChunk = line + '\n';
+      } else {
+        currentChunk += line + '\n';
+        
+        // チャンクが大きくなりすぎたら分割
+        if (currentChunk.length > 1000) {
+          chunks.push(currentChunk.trim());
+          currentChunk = '';
+        }
+      }
+    }
+    
+    if (currentChunk.trim()) {
+      chunks.push(currentChunk.trim());
+    }
+    
+    return chunks;
   }
 
   /**
    * キーワードによる契約ルールの検索
    */
-  searchRules(keyword: string): ContractRule[] {
+  searchRules(keyword: string): SearchResult[] {
+    if (!this.contractText) {
+      return [];
+    }
+
     const searchTerm = keyword.toLowerCase();
-    const results: ContractRule[] = [];
+    const results: SearchResult[] = [];
     
-    // 検索語を分割して複数のキーワードで検索
-    const searchWords = searchTerm.split(/\s+/).filter(word => word.length > 1);
-    
-    // 料金関連の質問かどうかを判定
-    const isPricingQuestion = /料金|価格|報酬|単価|費用|支払|金額/.test(searchTerm);
-    
-    this.rules.chapters.forEach((chapter: any) => {
-      let matchScore = 0;
+    // 各チャンクで検索
+    this.textChunks.forEach((chunk, index) => {
+      const relevance = this.calculateRelevance(chunk, searchTerm);
       
-      // タイトルでの完全一致（高スコア）
-      if (chapter.title.toLowerCase().includes(searchTerm)) {
-        matchScore += 10;
-      }
-      
-      // 個別のキーワードでの検索
-      searchWords.forEach(word => {
-        // タイトルでの部分一致
-        if (chapter.title.toLowerCase().includes(word)) {
-          matchScore += 5;
-        }
-        // 内容での部分一致
-        if (chapter.content.toLowerCase().includes(word)) {
-          matchScore += 3;
-        }
-        // タグでの部分一致
-        if (chapter.tags.some((tag: string) => tag.toLowerCase().includes(word))) {
-          matchScore += 4;
-        }
-      });
-      
-      // 料金関連の質問の場合は、料金に関連する章のスコアを上げる
-      if (isPricingQuestion && (
-        chapter.title.includes('報酬') || 
-        chapter.title.includes('料金') || 
-        chapter.title.includes('支払') ||
-        chapter.content.includes('円') ||
-        chapter.content.includes('料金') ||
-        chapter.content.includes('報酬')
-      )) {
-        matchScore += 8;
-      }
-      
-      // スコアが一定以上の場合に結果に追加
-      if (matchScore > 0) {
+      if (relevance > 0) {
         results.push({
-          id: chapter.id,
-          title: chapter.title,
-          content: chapter.content,
-          category: chapter.id,
-          tags: chapter.tags,
-          riskLevel: chapter.riskLevel,
-          matchScore: matchScore
+          content: chunk,
+          relevance: relevance,
+          chapter: `チャンク${index + 1}`
         });
       }
     });
     
-    // スコア順でソート
-    return results.sort((a: any, b: any) => (b.matchScore || 0) - (a.matchScore || 0));
+    // 関連性順でソート
+    return results.sort((a, b) => b.relevance - a.relevance);
   }
 
   /**
-   * リスクレベル別の契約ルール取得
+   * テキストチャンクと検索語の関連性を計算
    */
-  getRulesByRiskLevel(riskLevel: 'low' | 'medium' | 'high'): ContractRule[] {
-    return this.rules.chapters
-      .filter((chapter: any) => chapter.riskLevel === riskLevel)
-      .map((chapter: any) => ({
-        id: chapter.id,
-        title: chapter.title,
-        content: chapter.content,
-        category: chapter.id,
-        tags: chapter.tags,
-        riskLevel: chapter.riskLevel,
-        matchScore: 0
-      }));
-  }
-
-  /**
-   * 特定の章の詳細情報取得
-   */
-  getChapterById(chapterId: string): any | null {
-    return this.rules.chapters.find((chapter: any) => chapter.id === chapterId) || null;
-  }
-
-  /**
-   * FAQの検索
-   */
-  searchFAQ(keyword: string): any[] {
-    const searchTerm = keyword.toLowerCase();
-    return this.rules.faq.filter((faq: any) => 
-      faq.question.toLowerCase().includes(searchTerm) ||
-      faq.answer.toLowerCase().includes(searchTerm)
-    );
-  }
-
-  /**
-   * 関連する章の情報を取得
-   */
-  getRelatedChapters(chapterIds: string[]): ContractRule[] {
-    return chapterIds
-      .map(id => this.getChapterById(id))
-      .filter(Boolean)
-      .map((chapter: any) => ({
-        id: chapter.id,
-        title: chapter.title,
-        content: chapter.content,
-        category: chapter.id,
-        tags: chapter.tags,
-        riskLevel: chapter.riskLevel,
-        matchScore: 0
-      }));
-  }
-
-  /**
-   * 料金表の情報を取得
-   */
-  getPricingInfo(): any {
-    return this.rules.pricing || null;
-  }
-
-  /**
-   * 特定の料金カテゴリの情報を取得
-   */
-  getPricingByCategory(category: 'training' | 'meetings' | 'materials' | 'reporting' | 'others'): any {
-    return this.rules.pricing?.[category] || null;
-  }
-
-  /**
-   * 料金に関する質問かどうかを判定
-   */
-  isPricingQuestion(question: string): boolean {
-    return /料金|価格|報酬|単価|費用|支払|金額|円/.test(question);
-  }
-
-  /**
-   * 契約ルール集の概要情報取得
-   */
-  getSummary(): any {
-    return {
-      title: this.rules.title,
-      version: this.rules.version,
-      totalChapters: this.rules.chapters.length,
-      totalFAQ: this.rules.faq.length,
-      riskLevels: {
-        low: this.rules.chapters.filter((c: any) => c.riskLevel === 'low').length,
-        medium: this.rules.chapters.filter((c: any) => c.riskLevel === 'medium').length,
-        high: this.rules.chapters.filter((c: any) => c.riskLevel === 'high').length
-      }
-    };
-  }
-
-  /**
-   * 質問に関連する契約ルールの検索とコンテキスト生成
-   */
-  generateContextForQuestion(question: string): string {
-    const searchResults = this.searchRules(question);
-    const faqResults = this.searchFAQ(question);
+  private calculateRelevance(chunk: string, searchTerm: string): number {
+    const chunkLower = chunk.toLowerCase();
+    let relevance = 0;
     
-    // 料金関連の質問かどうかを判定
-    const isPricingQuestion = /料金|価格|報酬|単価|費用|支払|金額/.test(question);
-    
-    // デバッグ情報をコンソールに出力
-    console.log('=== 契約ルール集検索デバッグ ===');
-    console.log('質問:', question);
-    console.log('料金関連質問か:', isPricingQuestion);
-    console.log('検索結果数:', searchResults.length);
-    console.log('FAQ結果数:', faqResults.length);
-    console.log('検索結果:', searchResults);
-    console.log('FAQ結果:', faqResults);
-    console.log('==============================');
-    
-    let context = '**契約ルール集からの参考情報**：\n\n';
-    
-    // 料金関連の質問の場合は、料金表の情報を簡潔に提供
-    if (isPricingQuestion && this.rules.pricing) {
-      context += '**料金情報**：\n';
-      
-      // 研修登壇料金（簡潔に）
-      if (this.rules.pricing.training) {
-        context += `研修登壇: 半日35,000円(3時間以内30名以下)、1日60,000円(6時間以内50名以下)、延長8,000円/1時間\n`;
-      }
-      
-      // 打ち合わせ料金（簡潔に）
-      if (this.rules.pricing.meetings) {
-        context += `打ち合わせ: 初回5,000円、中間3,000円、最終無償\n`;
-      }
-      
-      // 資料作成料金（簡潔に）
-      if (this.rules.pricing.materials) {
-        context += `資料作成: オリジナル20,000円、カスタマイズ8,000円、ワークシート5,000円\n`;
-      }
-      
-      context += '\n';
+    // 完全一致
+    if (chunkLower.includes(searchTerm)) {
+      relevance += 10;
     }
     
-    if (searchResults.length > 0) {
-      context += '**関連する契約ルール**：\n';
-      // 最初の2つの結果のみを使用してコンテキストを短縮
-      searchResults.slice(0, 2).forEach((rule, index) => {
-        context += `${index + 1}. ${rule.title}: ${rule.content.substring(0, 200)}...\n`;
-      });
+    // 個別のキーワードで検索
+    const searchWords = searchTerm.split(/\s+/).filter(word => word.length > 1);
+    searchWords.forEach(word => {
+      if (chunkLower.includes(word)) {
+        relevance += 3;
+      }
+    });
+    
+    // 料金関連の質問の場合、料金関連の内容のスコアを上げる
+    if (/料金|価格|報酬|単価|費用|支払|金額/.test(searchTerm)) {
+      if (/円|料金|報酬|支払/.test(chunkLower)) {
+        relevance += 5;
+      }
     }
     
-    if (faqResults.length > 0) {
-      context += '**関連FAQ**：\n';
-      // 最初の1つのFAQのみを使用
-      const faq = faqResults[0];
-      context += `Q: ${faq.question}\nA: ${faq.answer}\n\n`;
+    return relevance;
+  }
+
+  /**
+   * 検索結果をAIのプロンプト用に整形
+   */
+  formatSearchResultsForPrompt(results: SearchResult[], maxLength: number = 3000): string {
+    let formattedText = '';
+    
+    for (const result of results) {
+      if (formattedText.length + result.content.length > maxLength) {
+        break;
+      }
+      formattedText += `\n\n【${result.chapter}】\n${result.content}`;
     }
     
-    context += '**重要**: 上記の契約ルール集の内容を必ず引用・参照して回答してください。\n';
-    
-    return context;
+    return formattedText;
   }
 }
 
